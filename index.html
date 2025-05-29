@@ -73,15 +73,34 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background 0.3s;
+            margin-right: 5px;
+            margin-bottom: 5px;
         }
         .btn:hover {
             background: #5a7df4;
+        }
+        .btn-secondary {
+            background: #777;
+        }
+        .btn-secondary:hover {
+            background: #666;
         }
         footer {
             text-align: center;
             margin-top: 40px;
             padding: 20px;
             color: #777;
+        }
+        .qr-actions {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .share-buttons {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -130,6 +149,22 @@
                 <input type="text" id="qr-text" class="tool-input" placeholder="Введите текст или ссылку">
                 <button onclick="generateQR()" class="btn">Создать QR</button>
                 <div id="qr-code" style="margin-top: 10px;"></div>
+                <div id="qr-actions" class="qr-actions" style="display: none;">
+                    <button onclick="downloadQR()" class="btn btn-secondary">
+                        <i class="fas fa-download"></i> Скачать
+                    </button>
+                    <div class="share-buttons">
+                        <button onclick="shareQR('whatsapp')" class="btn btn-secondary">
+                            <i class="fab fa-whatsapp"></i>
+                        </button>
+                        <button onclick="shareQR('telegram')" class="btn btn-secondary">
+                            <i class="fab fa-telegram"></i>
+                        </button>
+                        <button onclick="shareQR('email')" class="btn btn-secondary">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -173,11 +208,55 @@
         }
 
         // Генератор QR-кода (через API QRServer)
+        let currentQRCodeUrl = '';
+        
         function generateQR() {
             const text = document.getElementById('qr-text').value;
             if (!text) return alert('Введите текст!');
+            
             const qrCodeDiv = document.getElementById('qr-code');
-            qrCodeDiv.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}" alt="QR Code">`;
+            currentQRCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
+            
+            qrCodeDiv.innerHTML = `
+                <img src="${currentQRCodeUrl}" alt="QR Code">
+                <p><small>Содержимое: ${text}</small></p>
+            `;
+            
+            document.getElementById('qr-actions').style.display = 'block';
+        }
+
+        // Скачать QR-код
+        function downloadQR() {
+            if (!currentQRCodeUrl) return alert('Сначала создайте QR-код!');
+            
+            const link = document.createElement('a');
+            link.href = currentQRCodeUrl;
+            link.download = 'qrcode.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Поделиться QR-кодом
+        function shareQR(platform) {
+            if (!currentQRCodeUrl) return alert('Сначала создайте QR-код!');
+            
+            const text = document.getElementById('qr-text').value;
+            let url = '';
+            
+            switch(platform) {
+                case 'whatsapp':
+                    url = `https://wa.me/?text=${encodeURIComponent(`Посмотрите этот QR-код: ${text}\n\n${currentQRCodeUrl}`)}`;
+                    break;
+                case 'telegram':
+                    url = `https://t.me/share/url?url=${encodeURIComponent(currentQRCodeUrl)}&text=${encodeURIComponent(text)}`;
+                    break;
+                case 'email':
+                    url = `mailto:?subject=QR-код&body=Содержимое QR-кода: ${text}%0A%0AСсылка на изображение: ${currentQRCodeUrl}`;
+                    break;
+            }
+            
+            window.open(url, '_blank');
         }
     </script>
 </body>
