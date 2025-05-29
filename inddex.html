@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniTools — генератор UUID и других мелочей</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            border-radius: 10px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .tool-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        .tool-card:hover {
+            transform: translateY(-5px);
+        }
+        .tool-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #6e8efb;
+        }
+        .tool-input, .tool-output {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .btn {
+            background: #6e8efb;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #5a7df4;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MiniTools</h1>
+            <p class="subtitle">Генератор UUID и других полезных мелочей</p>
+        </header>
+
+        <div class="tools">
+            <!-- Генератор UUID -->
+            <div class="tool-card">
+                <h2 class="tool-title">🔢 Генератор UUID</h2>
+                <button onclick="generateUUID()" class="btn">Сгенерировать</button>
+                <input type="text" id="uuid-output" class="tool-output" readonly>
+                <small>Версия 4 (случайный UUID)</small>
+            </div>
+
+            <!-- Генератор паролей -->
+            <div class="tool-card">
+                <h2 class="tool-title">🔐 Генератор паролей</h2>
+                <div>
+                    <label>Длина пароля:</label>
+                    <input type="number" id="pass-length" min="4" max="50" value="12" class="tool-input">
+                </div>
+                <div>
+                    <label>Включить спецсимволы (!@#...)</label>
+                    <input type="checkbox" id="pass-symbols" checked>
+                </div>
+                <button onclick="generatePassword()" class="btn">Сгенерировать</button>
+                <input type="text" id="password-output" class="tool-output" readonly>
+            </div>
+
+            <!-- Очистка текста -->
+            <div class="tool-card">
+                <h2 class="tool-title">✂️ Очистка текста</h2>
+                <textarea id="dirty-text" class="tool-input" placeholder="Введите текст с лишними пробелами..."></textarea>
+                <button onclick="cleanText()" class="btn">Очистить</button>
+                <textarea id="clean-text" class="tool-output" readonly placeholder="Результат..."></textarea>
+            </div>
+
+            <!-- Генератор QR-кодов -->
+            <div class="tool-card">
+                <h2 class="tool-title">📲 Генератор QR-кода</h2>
+                <input type="text" id="qr-text" class="tool-input" placeholder="Введите текст или ссылку">
+                <button onclick="generateQR()" class="btn">Создать QR</button>
+                <div id="qr-code" style="margin-top: 10px;"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 MiniTools | Сделал Сом речной</p>
+        </footer>
+    </div>
+
+    <script>
+        // Генератор UUID v4
+        function generateUUID() {
+            const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+            document.getElementById('uuid-output').value = uuid;
+        }
+
+        // Генератор паролей
+        function generatePassword() {
+            const length = document.getElementById('pass-length').value;
+            const useSymbols = document.getElementById('pass-symbols').checked;
+            let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            if (useSymbols) chars += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('password-output').value = password;
+        }
+
+        // Очистка текста
+        function cleanText() {
+            const dirtyText = document.getElementById('dirty-text').value;
+            const cleanText = dirtyText
+                .replace(/\s+/g, ' ') // Удаляет лишние пробелы
+                .replace(/\s+([.,!?])/g, '$1') // Убирает пробелы перед знаками препинания
+                .trim();
+            document.getElementById('clean-text').value = cleanText;
+        }
+
+        // Генератор QR-кода (через API QRServer)
+        function generateQR() {
+            const text = document.getElementById('qr-text').value;
+            if (!text) return alert('Введите текст!');
+            const qrCodeDiv = document.getElementById('qr-code');
+            qrCodeDiv.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}" alt="QR Code">`;
+        }
+    </script>
+</body>
+</html>
